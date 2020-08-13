@@ -1,40 +1,58 @@
 ;; PL Project - Spring 2020
 ;; NUMEX interpreter
+;;MohammadAli Keshavarz - 9631061
 
 #lang racket
 (provide (all-defined-out)) ;; so we can put tests in a second file
 
-;; definition of structures for NUMEX programs
+;; definition of structures for NUMEX programs --------------------------------------------------------------
+(struct var (string) #:transparent)
+(struct num (int) #:transparent)
+(struct bool (b) #:transparent)
+(struct plus (e1 e2) #:transparent)
+(struct minus (e1 e2) #:transparent)
+(struct mult (e1 e2) #:transparent)
+(struct div (e1 e2) #:transparent)
+(struct neg (e) #:transparent)
+(struct andalso (e1 e2) #:transparent)
+(struct orelse (e1 e2) #:transparent)
+(struct cnd (e1 e2 e3) #:transparent)
+(struct iseq (e1 e2) #:transparent)
+(struct ifnzero (e1 e2 e3) #:transparent)
+(struct ifleq (e1 e2 e3 e4) #:transparent)
+(struct lam (nameopt formal body) #:transparent)
+(struct apply (funexp actual) #:transparent)
+(struct with (s e1 e2) #:transparent)
+(struct apair (e1 e2) #:transparent)
+(struct 1st (e) #:transparent)
+(struct 2nd (e) #:transparent)
+(struct munit () #:transparent)
+(struct ismunit (e) #:transparent)
+(struct closure (env f) #:transparent)
+(struct letrec (s1 e1 s2 e2 s3 e3 e4 #:transparent)
+(struct queue (e q) #:transparent)
+(struct enqueue (e q) #:transparent)
+(struct dequeue (q) #:transparent)
+(struct extract (q) #:transparent)
 
-;; CHANGE add the missing ones
 
-(struct var  (string) #:transparent)  ;; a variable, e.g., (var "foo")
-(struct num  (int)    #:transparent)  ;; a constant number, e.g., (num 17)
-(struct plus  (e1 e2)  #:transparent)  ;; add two expressions
+;; Problem 1 ---------------------------------------------------------------------------------------------------
 
+;input is either null, or a racket list, or something invalid
+(define (racketlist->numexlist xs)
+  (cond[(null? xs) (munit)] ;null in racket is munit in NUMEX
+       [(list? xs) (apair (car xs) (racketlist->numexlist (cdr xs)))] ;list in racket is apair in NUMEX(which is applied recursively)
+       [else (error ("not a racket list"))]) ;shows that the input is invalid
+  )
 
-(struct lam  (nameopt formal body) #:transparent) ;; a recursive(?) 1-argument function
-(struct apply (funexp actual)       #:transparent) ;; function application
+;input is either null, or a NUMEX list, or something invalid
+(define (numexlist->racketlist xs)
+  (cond[(munit? xs) null] ;munit in NUMEX is null in racket
+       [(apair? xs) (cons (apair-e1 xs) (numexlist->racketlist (apair-e2 xs)))] ;apair in NUMEX is list in racket(which is applied recursively)
+       [else (error ("not a NUMEX list"))]) ;shows that the input is invalid
+  )
 
-
-(struct munit   ()      #:transparent) ;; unit value -- good for ending a list
-(struct ismunit (e)     #:transparent) ;; if e1 is unit then true else false
-
-;; a closure is not in "source" programs; it is what functions evaluate to
-(struct closure (env f) #:transparent) 
-
-(struct letrec (s1 e1 s2 e2 s3 e3 e4) #:transparent) ;; a letrec expression for recursive definitions
-(struct queue (e q) #:transparent) ;; it holds several expressions
-(struct enqueue (e q) #:transparent) ;; it enqueues e into q
-(struct dequeue (q) #:transparent) ;; it dequeues q
-(struct extract (q) #:transparent) ;; it returns queue's top element
-
-;; Problem 1
-
-(define (racketlist->numexlist xs) "CHANGE")
-(define (numexlist->racketlist xs) "CHANGE")
-
-;; Problem 2
+;; Problem 2 ---------------------------------------------------------------------------------------------------
 
 ;; lookup a variable in an environment
 ;; Complete this function
